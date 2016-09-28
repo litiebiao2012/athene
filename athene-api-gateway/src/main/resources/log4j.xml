@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="GB2312"?>
+<!--LOG4J CONFIGURATION - XML style -->
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p - [%C{1}] %m%n"/>
+        </layout>
+    </appender>
+
+    <!--<appender name="monitorLog" class="com.shining3d.monitor.plugin.log4j.JMonitorLog4jAppender">-->
+    <!--<layout class="org.apache.log4j.PatternLayout">-->
+    <!--<param name="ConversionPattern" value="%d [%t] %p - %m%n"/>-->
+    <!--</layout>-->
+    <!--</appender>-->
+
+    <appender name="athene" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${logging.path}/api.log"/>
+        <param name="Append" value="true"/>
+        <param name="MaxBackupIndex" value="3"/>
+        <param name="MaxFileSize" value="2MB"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %p - %m%n"/>
+        </layout>
+    </appender>
+
+    <root>
+        <level value="error"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</log4j:configuration>

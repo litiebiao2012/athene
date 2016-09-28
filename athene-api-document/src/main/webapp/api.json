@@ -1,0 +1,65 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "雅典娜统一接口平台",
+    "version": "1.0.0",
+    "title": "Athene",
+    "contact": {
+      "email": "litiebiao2012@163.com"
+    }
+  },
+  "host": "localhost:3030",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "user",
+      "description": "用户中心服务"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/user/findAllUsers": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "查找所有用户",
+        "description": "查找所有用户",
+        "operationId": "findAllUsers",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "formData",
+            "description": "页码",
+            "required": true,
+            "type": "boolean"
+          },
+          {
+            "name": "pageSize",
+            "in": "formData",
+            "description": "每页大小",
+            "required": true,
+            "defaultValue" : "aaa",
+            "type": "integer"
+          },
+          {
+            "name": "userName",
+            "in": "formData",
+            "description": "用户名",
+            "required": true,
+            "type": "string"
+          }
+        ]
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Athene统一接口管理平台,后端dubbo rpc需要依赖athene-client.jar,athene-client.jar会在dubbo rpc服务启动同时将rpc服务发布至athene-api-gateway网关上,同时将接口描述信息发布至该平台上",
+    "url": "https://github.com/litiebiao2012/athene"
+  }
+}
