@@ -1,10 +1,6 @@
-package com.athene.api.document;
+package com.atehene.api.core.domain;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by fe on 16/9/28.
@@ -78,15 +74,17 @@ import java.util.HashMap;
  */
 public class ApiInfo {
 
+    public static final String ATHENE_API_GATEWAY_HOST = System.getProperty("athene.api.gateway.host");
+
     public static ApiInfo apiInfo;
 
     private String swagger = "2.0";
     private Map<String,Object> info;
-    private String host = Constants.ATHENE_API_GATEWAY_HOST;
+    private String host = ATHENE_API_GATEWAY_HOST;
     private String basePath = "/";
     private List<Map<String,Object>> tags = new LinkedList<Map<String,Object>>();
     private List<String> schemes;
-    private Map<String,ApiDetail> paths = new LinkedHashMap<String,ApiDetail>();
+    private Map<String,Map<String,ApiDetail>> paths = new LinkedHashMap<String,Map<String,ApiDetail>>();
     private Map<String,Object> externalDocs;
 
     private static Object mutex = new Object();
@@ -158,16 +156,25 @@ public class ApiInfo {
         this.schemes = schemes;
     }
 
-    public Map<String, ApiDetail> getPaths() {
-        return paths;
-    }
-
-    public void setPaths(Map<String, ApiDetail> paths) {
-        this.paths = paths;
-    }
 
     public Map<String, Object> getExternalDocs() {
         return externalDocs;
+    }
+
+    public static ApiInfo getApiInfo() {
+        return apiInfo;
+    }
+
+    public static void setApiInfo(ApiInfo apiInfo) {
+        ApiInfo.apiInfo = apiInfo;
+    }
+
+    public Map<String, Map<String, ApiDetail>> getPaths() {
+        return paths;
+    }
+
+    public void setPaths(Map<String, Map<String, ApiDetail>> paths) {
+        this.paths = paths;
     }
 
     public void setExternalDocs(Map<String, Object> externalDocs) {
@@ -182,7 +189,9 @@ public class ApiInfo {
     }
 
     public void addApiDetail(String url,ApiDetail apiDetail) {
-        paths.put(url,apiDetail);
+        Map<String,ApiDetail> apiDetailMap = new HashMap<String,ApiDetail>();
+        apiDetailMap.put("post",apiDetail);
+        paths.put(url,apiDetailMap);
     }
 
     public static ApiInfo getInstance() {

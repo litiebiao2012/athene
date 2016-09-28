@@ -18,6 +18,18 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.athene.api.gateway</groupId>
+            <artifactId>athene-api-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.athene.api.gateway</groupId>
+            <artifactId>athene-api-common</artifactId>
+        </dependency>
 
     </dependencies>
 </project>
