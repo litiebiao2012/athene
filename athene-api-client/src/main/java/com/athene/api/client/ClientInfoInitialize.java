@@ -3,6 +3,9 @@ package com.athene.api.client;
 import com.athene.api.client.annotation.ApiGroup;
 import com.athene.api.client.exception.AtheneClientException;
 import com.athene.api.common.StringUtils;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +133,14 @@ public class ClientInfoInitialize {
      */
     private static void processClazzList(List<Class<?>> clientInterfaceClassList) {
         if (clientInterfaceClassList != null && clientInterfaceClassList.size() > 0) {
-
+            for (Class clazz : clientInterfaceClassList) {
+                ClassPool classPool = ClassPool.getDefault();
+                try {
+                    CtClass ctClass = classPool.get(clazz.getName());
+                } catch (NotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
