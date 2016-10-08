@@ -22,7 +22,4 @@ public @interface ApiGroup {
 
     public String group() default "";
 
-    public String serviceName() default "";
-
-
 }

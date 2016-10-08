@@ -19,7 +19,7 @@ import java.util.Map;
  * Created by fe on 16/9/27.
  * {"apiInfo" : "", "apiTag" : ""}
  */
-@WebServlet(urlPatterns = "/apiInfo")
+@WebServlet(urlPatterns = "/regApiInfo")
 public class ApiInfoRegisterServlet extends BaseServlet {
 
 

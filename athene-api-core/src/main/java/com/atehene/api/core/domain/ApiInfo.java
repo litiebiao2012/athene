@@ -89,7 +89,7 @@ public class ApiInfo {
 
     private static Object mutex = new Object();
 
-    public ApiInfo() {
+    private ApiInfo() {
         info = new LinkedHashMap<String,Object>();
         info.put("description","雅典娜统一接口平台");
         info.put("version","1.0.0");

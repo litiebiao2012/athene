@@ -1,17 +1,23 @@
 package com.athene.api.client;
 
+import com.atehene.api.core.domain.ApiInfo;
 import com.athene.api.client.annotation.ApiGroup;
+import com.athene.api.client.annotation.ApiMethod;
 import com.athene.api.client.exception.AtheneClientException;
+import com.athene.api.client.mapping.AtheneApiGroupMapping;
 import com.athene.api.common.StringUtils;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtMethod;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by fe on 16/9/18.
@@ -36,11 +42,15 @@ public class ClientInfoInitialize {
 
     public static final String apiGateWayUri = "/reg.api";
 
-    public static final String apiDocumentUri = "/apiInfo";
+    public static final String apiDocumentUri = "/regApiInfo";
 
     public static final List<String> apiGateWayUrls = new LinkedList<String>();
 
     static {
+        init();
+    }
+
+    public static void init() {
         String atheneClientPathKey = System.getProperty(ATHENE_CLIENT_PATH_KEY);
 
         if (StringUtils.isEmpty(atheneClientPathKey))
@@ -80,6 +90,19 @@ public class ClientInfoInitialize {
 
         List<Class<?>> clientInterfaceClassList = new LinkedList<Class<?>>();
         loadClazzInterface(files,clientInterfaceClassList);
+
+        processClazzList(clientInterfaceClassList);
+
+        for (String host : apiGateWayUrls) {
+            logger.info("begin register api to gateway , host : {}",host);
+            registerClientApiToGateWay(host);
+            logger.info("host : {} register success!",host);
+        }
+
+        logger.info("begin send data to api document, host : {}",apiDocumentUrl);
+        sendDataToApiDocument(apiDocumentUrl);
+        logger.info("send data to api document success!");
+
 
     }
 
@@ -137,10 +160,59 @@ public class ClientInfoInitialize {
                 ClassPool classPool = ClassPool.getDefault();
                 try {
                     CtClass ctClass = classPool.get(clazz.getName());
-                } catch (NotFoundException e) {
-                    e.printStackTrace();
+                    ApiInfo apiInfo = ApiInfo.getInstance();
+
+                    ApiGroup apiGroup = (ApiGroup) ctClass.getAnnotation(ApiGroup.class);
+                    if (apiGroup != null) {
+                        String description = apiGroup.description();
+                        String owner = apiGroup.owner();
+                    }
+                    CtMethod[] methods = ctClass.getMethods();
+                    //TODO 重载函数需要启别名区分 未区分则athene加载抛出异常
+                    checkMethods(methods,clazz.getName());
+
+                    for (CtMethod m : methods) {
+                        ApiMethod apiMethod = (ApiMethod) m.getAnnotation(ApiMethod.class);
+                        if (apiMethod != null) {
+                            String methodDescription = apiMethod.description();
+                            String methodName = m.getName();
+
+                            //TODO 默认取函数名,如果启动@ApiMethod属性配置,则取@ApiMethod属性配置methodName
+                            if (!StringUtils.isEmpty(apiMethod.methodName())) {
+                                methodName = apiMethod.methodName();
+                            }
+                        }
+
+                    }
+
+                } catch (ClassNotFoundException e) {
+
+                } catch (NotFoundException e1) {
                 }
             }
+        }
+    }
+
+    /**
+     * method校验
+     * @param methods
+     * @param className
+     * @throws ClassNotFoundException
+     */
+    private static void checkMethods(CtMethod[] methods,String className) throws ClassNotFoundException {
+        if (methods != null && methods.length > 0) {
+            int methodNum = methods.length;
+            Set<String> methodSet = new HashSet<String>();
+            for (CtMethod m : methods) {
+                ApiMethod apiMethod = (ApiMethod) m.getAnnotation(ApiMethod.class);
+                String methodName = m.getName();
+                if (apiMethod != null) {
+                    if (!StringUtils.isEmpty(apiMethod.methodName())) methodName = apiMethod.methodName();
+                }
+                methodSet.add(methodName);
+            }
+
+            if (methodNum != methodSet.size()) throw new AtheneClientException("find [" + className + "] has same method!  please check!  you can use @ApiMethod.methodName() fix this problem!");
         }
     }
 
@@ -148,15 +220,14 @@ public class ClientInfoInitialize {
     /**
      * 接口信息注册至apiGateWay
      */
-    public void registerClientApiToGateWay() {
+    public static void registerClientApiToGateWay(String clientApiGateWayHost) {
 
     }
 
     /**
      * 接口描述信息发送至document
      */
-    public void sendDataToApiDocument() {
-
+    public static void sendDataToApiDocument(String apiDocumentHost) {
 
     }
 

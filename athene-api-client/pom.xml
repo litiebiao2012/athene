@@ -23,5 +23,9 @@
             <groupId>com.athene.api.gateway</groupId>
             <artifactId>athene-api-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.athene.api.gateway</groupId>
+            <artifactId>athene-api-core</artifactId>
+        </dependency>
     </dependencies>
 </project>
