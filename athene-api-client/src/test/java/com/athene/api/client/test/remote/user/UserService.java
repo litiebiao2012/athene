@@ -7,8 +7,10 @@ import com.athene.api.client.test.remote.Result;
 import com.athene.api.client.test.remote.dto.UserDto;
 import com.athene.api.client.test.remote.query.UserQuery;
 
+import javax.annotation.Resource;
 import java.util.List;
 
+@Resource
 @ApiGroup(
         description = "用户服务",
         owner = "fe",

@@ -6,12 +6,14 @@ import com.athene.api.client.annotation.ApiParam;
 import com.athene.api.gateway.test.dto.UserDto;
 import com.athene.api.gateway.test.query.UserQuery;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
  * Created by fe on 16/9/9.
  */
 
+@Resource
 @ApiGroup(
         description = "用户服务",
         owner = "fe",

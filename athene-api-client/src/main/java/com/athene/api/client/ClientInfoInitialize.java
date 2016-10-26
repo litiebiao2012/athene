@@ -10,14 +10,16 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.bytecode.CodeAttribute;
+import javassist.bytecode.LocalVariableAttribute;
+import javassist.bytecode.LocalVariableTypeAttribute;
+import javassist.bytecode.MethodInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * Created by fe on 16/9/18.
@@ -45,6 +47,21 @@ public class ClientInfoInitialize {
     public static final String apiDocumentUri = "/regApiInfo";
 
     public static final List<String> apiGateWayUrls = new LinkedList<String>();
+
+    public static final List<String> excludeMethodNameList = new ArrayList<String>() {
+        {
+            add("clone");
+            add("equals");
+            add("finalize");
+            add("getClass");
+            add("hashCode");
+            add("notify");
+            add("notifyAll");
+            add("registerNatives");
+            add("toString");
+            add("wait");
+        }
+    };
 
     static {
         init();
@@ -137,6 +154,7 @@ public class ClientInfoInitialize {
         int end = file.getPath().lastIndexOf(".");
         String className = file.getPath().substring(start,end).replace("/",".");
         try {
+
             Class<?> clazz = Class.forName(className);
             if (clazz.isInterface()) {
                 ApiGroup apiGroup = clazz.getAnnotation(ApiGroup.class);
@@ -157,41 +175,70 @@ public class ClientInfoInitialize {
     private static void processClazzList(List<Class<?>> clientInterfaceClassList) {
         if (clientInterfaceClassList != null && clientInterfaceClassList.size() > 0) {
             for (Class clazz : clientInterfaceClassList) {
-                ClassPool classPool = ClassPool.getDefault();
                 try {
-                    CtClass ctClass = classPool.get(clazz.getName());
-                    ApiInfo apiInfo = ApiInfo.getInstance();
-
-                    ApiGroup apiGroup = (ApiGroup) ctClass.getAnnotation(ApiGroup.class);
-                    if (apiGroup != null) {
-                        String description = apiGroup.description();
-                        String owner = apiGroup.owner();
-                    }
-                    CtMethod[] methods = ctClass.getMethods();
+                    Method[] methods = clazz.getDeclaredMethods();
                     //TODO 重载函数需要启别名区分 未区分则athene加载抛出异常
                     checkMethods(methods,clazz.getName());
-
-                    for (CtMethod m : methods) {
+                    for (Method m : methods) {
                         ApiMethod apiMethod = (ApiMethod) m.getAnnotation(ApiMethod.class);
+                        String methodDescription = "";
+                        String methodName = m.getName();
                         if (apiMethod != null) {
-                            String methodDescription = apiMethod.description();
-                            String methodName = m.getName();
-
+                            methodDescription = apiMethod.description();
                             //TODO 默认取函数名,如果启动@ApiMethod属性配置,则取@ApiMethod属性配置methodName
                             if (!StringUtils.isEmpty(apiMethod.methodName())) {
                                 methodName = apiMethod.methodName();
                             }
                         }
 
+                        //TODO 解析method 参数
+                        parseMethodParameter(m);
+
+
+                        //TODO 解析method返回结果
                     }
 
-                } catch (ClassNotFoundException e) {
+                }  catch (NotFoundException e1) {
 
-                } catch (NotFoundException e1) {
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
+
+    /**
+     * 解析method 请求参数
+     * @param m
+     */
+    private static void parseMethodParameter(Method m) throws NotFoundException {
+
+        List<String> nameList = MethodParamNamesScaner.getParamNames(m);
+
+
+        Class<?> clazz = m.getDeclaringClass();
+        ClassPool pool = ClassPool.getDefault();
+        CtClass clz = pool.get(clazz.getName());
+
+
+        CtClass[] params = new CtClass[m.getParameterTypes().length];
+        for (int i = 0; i < m.getParameterTypes().length; i++) {
+            params[i] = pool.getCtClass(m.getParameterTypes()[i].getName());
+        }
+        CtMethod cm = clz.getDeclaredMethod(m.getName(), params);
+        MethodInfo methodInfo = cm.getMethodInfo();
+        CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+
+    }
+
+    /**
+     * 解析method返回结果
+     * @param ctMethod
+     */
+    private static void parseMethodReturnType(CtMethod ctMethod) {
+
+    }
+
 
     /**
      * method校验
@@ -199,11 +246,11 @@ public class ClientInfoInitialize {
      * @param className
      * @throws ClassNotFoundException
      */
-    private static void checkMethods(CtMethod[] methods,String className) throws ClassNotFoundException {
+    private static void checkMethods(Method[] methods,String className) throws ClassNotFoundException {
         if (methods != null && methods.length > 0) {
-            int methodNum = methods.length;
+            int methodNum = methods.length ;
             Set<String> methodSet = new HashSet<String>();
-            for (CtMethod m : methods) {
+            for (Method m : methods) {
                 ApiMethod apiMethod = (ApiMethod) m.getAnnotation(ApiMethod.class);
                 String methodName = m.getName();
                 if (apiMethod != null) {
