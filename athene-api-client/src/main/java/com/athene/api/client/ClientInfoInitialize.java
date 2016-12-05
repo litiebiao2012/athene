@@ -3,8 +3,12 @@ package com.athene.api.client;
 import com.atehene.api.core.domain.ApiInfo;
 import com.athene.api.client.annotation.ApiGroup;
 import com.athene.api.client.annotation.ApiMethod;
+import com.athene.api.client.annotation.ApiParam;
 import com.athene.api.client.exception.AtheneClientException;
 import com.athene.api.client.mapping.AtheneApiGroupMapping;
+import com.athene.api.client.mapping.AtheneApiMethodMapping;
+import com.athene.api.client.mapping.AtheneApiMethodParamMapping;
+import com.athene.api.common.FastJson;
 import com.athene.api.common.StringUtils;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -19,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 /**
@@ -180,17 +185,6 @@ public class ClientInfoInitialize {
                     //TODO 重载函数需要启别名区分 未区分则athene加载抛出异常
                     checkMethods(methods,clazz.getName());
                     for (Method m : methods) {
-                        ApiMethod apiMethod = (ApiMethod) m.getAnnotation(ApiMethod.class);
-                        String methodDescription = "";
-                        String methodName = m.getName();
-                        if (apiMethod != null) {
-                            methodDescription = apiMethod.description();
-                            //TODO 默认取函数名,如果启动@ApiMethod属性配置,则取@ApiMethod属性配置methodName
-                            if (!StringUtils.isEmpty(apiMethod.methodName())) {
-                                methodName = apiMethod.methodName();
-                            }
-                        }
-
                         //TODO 解析method 参数
                         parseMethodParameter(m);
 
@@ -212,22 +206,46 @@ public class ClientInfoInitialize {
      * @param m
      */
     private static void parseMethodParameter(Method m) throws NotFoundException {
-
-        List<String> nameList = MethodParamNamesScaner.getParamNames(m);
-
-
-        Class<?> clazz = m.getDeclaringClass();
-        ClassPool pool = ClassPool.getDefault();
-        CtClass clz = pool.get(clazz.getName());
-
-
-        CtClass[] params = new CtClass[m.getParameterTypes().length];
-        for (int i = 0; i < m.getParameterTypes().length; i++) {
-            params[i] = pool.getCtClass(m.getParameterTypes()[i].getName());
+        ApiMethod apiMethod = (ApiMethod) m.getAnnotation(ApiMethod.class);
+        String methodDescription = "";
+        String methodName = m.getName();
+        if (apiMethod != null) {
+            methodDescription = apiMethod.description();
+            //TODO 默认取函数名,如果启动@ApiMethod属性配置,则取@ApiMethod属性配置methodName
+            if (!StringUtils.isEmpty(apiMethod.methodName())) {
+                methodName = apiMethod.methodName();
+            }
         }
-        CtMethod cm = clz.getDeclaredMethod(m.getName(), params);
-        MethodInfo methodInfo = cm.getMethodInfo();
-        CodeAttribute codeAttribute = methodInfo.getCodeAttribute();
+
+
+        List<AtheneApiMethodParamMapping> atheneApiMethodParamMappingList = new LinkedList<AtheneApiMethodParamMapping>();
+        Parameter[] parameters = m.getParameters();
+        if (parameters != null && parameters.length > 0) {
+            for (Parameter p : parameters) {
+                String paramName = p.getName();
+                String paramType = p.getType().getName();
+                ApiParam apiParam = p.getAnnotation(ApiParam.class);
+                if (apiParam != null) {
+                    String defaultValue = apiParam.defaultValue();
+                    boolean required = apiParam.required();
+                    String description = apiParam.description();
+                    AtheneApiMethodParamMapping atheneApiMethodParamMapping = new AtheneApiMethodParamMapping();
+                    atheneApiMethodParamMapping.setDescription(description);
+                    atheneApiMethodParamMapping.setRequired(required);
+                    atheneApiMethodParamMapping.setDefaultValue(defaultValue);
+                    atheneApiMethodParamMapping.setParamName(paramName);
+                    atheneApiMethodParamMapping.setParamType(paramType);
+
+                    atheneApiMethodParamMappingList.add(atheneApiMethodParamMapping);
+                }
+            }
+        }
+        AtheneApiMethodMapping atheneApiMethodMapping = new AtheneApiMethodMapping();
+        atheneApiMethodMapping.setMethodName(methodName);
+        atheneApiMethodMapping.setDescription(methodDescription);
+        atheneApiMethodMapping.setNeedAuth(apiMethod.needAuth());
+        atheneApiMethodMapping.setAtheneApiMethodParamMappingList(atheneApiMethodParamMappingList);
+        System.out.println(FastJson.toJson(atheneApiMethodMapping));
 
     }
 

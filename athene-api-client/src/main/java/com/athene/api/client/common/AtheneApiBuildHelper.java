@@ -147,7 +147,7 @@ public class AtheneApiBuildHelper {
                 childAtheneApiMethodParamMapping.setParamType(ReflectionUtils.fixTypeName(f.getGenericType()));
                 defaultValueList.add(childAtheneApiMethodParamMapping);
             }
-            atheneApiMethodParamMapping.setDefaultValue(defaultValueList);
+            //atheneApiMethodParamMapping.setDefaultValue(defaultValueList);
         } else {
             String defaultValue = apiParam.defaultValue();
             atheneApiMethodParamMapping.setDefaultValue(defaultValue);

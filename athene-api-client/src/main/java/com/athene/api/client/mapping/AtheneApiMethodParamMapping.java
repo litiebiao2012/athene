@@ -10,8 +10,9 @@ package com.athene.api.client.mapping;
  */
 public class AtheneApiMethodParamMapping {
     private String description;
-    private Object defaultValue;
+    private String defaultValue;
     private boolean required;
+    private String paramName;
     private String paramType;
 
     public String getDescription() {
@@ -38,11 +39,20 @@ public class AtheneApiMethodParamMapping {
         this.paramType = paramType;
     }
 
-    public Object getDefaultValue() {
+    public String getParamName() {
+        return paramName;
+    }
+
+    public void setParamName(String paramName) {
+        this.paramName = paramName;
+    }
+
+    public String getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(Object defaultValue) {
+    public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
     }
+
 }

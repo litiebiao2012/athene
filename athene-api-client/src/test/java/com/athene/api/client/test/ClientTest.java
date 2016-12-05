@@ -22,17 +22,4 @@ public class ClientTest {
         }
 
     }
-
-    @Test
-    public void test01() {
-        String path = "/Users/Fe/coding";
-        System.out.println(path.lastIndexOf("/"));
-    }
-
-
-
-    @Test
-    public void test02() {
-
-    }
 }
